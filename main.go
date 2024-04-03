@@ -1,62 +1,59 @@
 package main
 
 import (
-	"database/sql"
-	"encoding/json"
+	_ "database/sql"
+	_ "encoding/json"
 	"fmt"
-	"log"
+	_ "fmt"
+	_ "log"
 	"net/http"
 
+	"github.com/IBM/sarama"
+	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
+	_ "github.com/gorilla/mux"
 )
 
-type Item struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Price int    `json:"price"`
-}
-
-var items []Item
-
 func main() {
-	// Create a server
-	router := mux.NewRouter()
-	router.HandleFunc("/items", GetItems).Methods("GET")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	router := gin.Default()
 
-	// Connect to the database
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/database_name")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	// Define HTTP handler
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// Example query to the database
-		rows, err := db.Query("SELECT * FROM example_table")
-		if err != nil {
-			log.Fatal(err)
+	// Endpoint to submit Kafka broker address via POST request
+	router.POST("/kafka-setup", func(c *gin.Context) {
+		var kafkaBroker struct {
+			Address string `json:"address"`
 		}
-		defer rows.Close()
+		// Bind JSON body to struct
+		if err := c.BindJSON(&kafkaBroker); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			println(err.Error())
+			return
+		}
 
-		// Print query results
-		for rows.Next() {
-			var id int
-			var name string
-			if err := rows.Scan(&id, &name); err != nil {
-				log.Fatal(err)
-			}
-			fmt.Fprintf(w, "ID: %d, Name: %s\n", id, name)
+		// Check if the broker is available
+		if isBrokerAvailable(kafkaBroker.Address) {
+			fmt.Println("Kafka broker is available.")
+			c.JSON(http.StatusOK, gin.H{"status": "running"})
+		} else {
+			fmt.Println("Kafka broker is not available.")
+			c.JSON(http.StatusBadRequest, gin.H{"status": "failed"})
 		}
 	})
-
-	// Start HTTP server
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// Run the server
+	router.Run(":3312")
 }
 
-func GetItems(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(items)
+func isBrokerAvailable(broker string) bool {
+	// Create configuration for the Kafka client
+	config := sarama.NewConfig()
+	config.Version = sarama.V2_6_0_0 // Set the Kafka version
+
+	// Create a new Kafka client
+	client, err := sarama.NewClient([]string{broker}, config)
+	if err != nil {
+		fmt.Println("Error creating Kafka client:", err)
+		return false
+	}
+	defer client.Close()
+
+	return true
 }
