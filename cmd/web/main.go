@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
-	"os"
 
 	_ "database/sql"
 	_ "encoding/json"
@@ -12,7 +12,6 @@ import (
 	"github.com/IBM/sarama"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gin-gonic/gin"
-	"github.com/hashicorp/mdns"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/gorilla/mux"
@@ -25,9 +24,13 @@ func onMessageReceived(client mqtt.Client, message mqtt.Message) {
 func main() {
 	// mqtt topic
 	topic := "test/"
+	payload := []byte("Bye")
+	var qos byte = 1
 
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker("localhost:1883")
+	opts.SetClientID("Go Client")
+	opts.SetBinaryWill("/Go/Will", payload, qos, false)
+	opts.AddBroker("broker:1883")
 
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
@@ -39,14 +42,7 @@ func main() {
 	}
 	fmt.Println("Subscribed to topic:", topic)
 
-	// Setup our service export
-	host, _ := os.Hostname()
-	info := []string{"My awesome service"}
-	service, _ := mdns.NewMDNSService(host, "MQQTT.tcp", "", "", 1883, nil, info)
-	println(host)
-	// Create the mDNS server, defer shutdown
-	server, _ := mdns.NewServer(&mdns.Config{Zone: service})
-	defer server.Shutdown()
+	discoverDevice("esp32.local")
 
 	router := gin.Default()
 	// Endpoint to submit Kafka broker address via POST request
@@ -71,7 +67,7 @@ func main() {
 		}
 	})
 	// Run the server
-	router.Run(":8088")
+	router.Run("0.0.0.0:8088")
 }
 
 func isBrokerAvailable(broker string) bool {
@@ -87,5 +83,19 @@ func isBrokerAvailable(broker string) bool {
 	}
 	defer client.Close()
 
+	return true
+}
+
+func discoverDevice(deviceID string) bool {
+	url := "http://" + deviceID + "/ip"
+	jsonStr := []byte(`{"brokerIP": "192.168.0.26"}`)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 	return true
 }
