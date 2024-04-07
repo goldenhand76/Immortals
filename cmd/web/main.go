@@ -1,19 +1,19 @@
 package main
 
 import (
+	"Immortals/internal/immo"
 	"Immortals/internal/kafka"
 	"Immortals/internal/mqtt"
-	"Immortals/pkg/api/node"
+	_ "Immortals/pkg/api/node"
 	"context"
-	"log"
 	"sync"
 )
 
 func main() {
-	err := node.DiscoverNode("esp32.local")
-	if err != nil {
-		log.Printf("Failed to discover the node %v", err)
-	}
+	// err := node.DiscoverNode("esp32.local")
+	// if err != nil {
+	// 	log.Printf("Failed to discover the node %v", err)
+	// }
 
 	store := &kafka.NotificationStore{
 		Data: make(kafka.UserNotifications),
@@ -24,7 +24,10 @@ func main() {
 
 	// Create a wait group to wait for all consumers to finish
 	var wg sync.WaitGroup
-	wg.Add(2) // Number of consumers
+	wg.Add(3) // Number of consumers
+
+	go immo.SetupImmo()
+	defer wg.Done()
 
 	// Start Kafka consumer
 	go kafka.SetupConsumerGroup(ctx, store)

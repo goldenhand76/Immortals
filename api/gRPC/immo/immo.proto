@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package immo;
+
+option go_package = "./immo";
+
+service ImmoService {
+  rpc DiscoverNode(NodeRequest) returns (NodeResponse);
+}
+
+message NodeRequest {
+  string name = 1;
+  string address = 2;
+}
+
+message NodeResponse {
+  string node_id = 1;
+  string error = 2;
+}
