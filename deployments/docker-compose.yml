@@ -1,15 +1,12 @@
 version: '3.8'
-
+name: immortals
 services:
-
 
   backend:
     build: 
       context: ../
       dockerfile: build/package/Dockerfile
     container_name: backend-Immo
-    ports:
-      - "8088:8088"
 
   broker:
     image: eclipse-mosquitto:2.0

@@ -86,8 +86,8 @@ func SetupConsumerGroup(ctx context.Context, store *NotificationStore) {
 	if err != nil {
 		log.Printf("initialization error: %v", err)
 	}
-	fmt.Println("Successfully initialized kafka consumer group to topic:")
 	defer consumerGroup.Close()
+	fmt.Println("Successfully initialized kafka consumer group to topic:")
 
 	consumer := &Consumer{
 		store: store,
@@ -96,7 +96,7 @@ func SetupConsumerGroup(ctx context.Context, store *NotificationStore) {
 	for {
 		err = consumerGroup.Consume(ctx, []string{ConsumerTopic}, consumer)
 		if err != nil {
-			log.Printf("error from consumer: %v", err)
+			panic(fmt.Sprintf("Error from consumer: %v", err))
 		}
 		if ctx.Err() != nil {
 			return

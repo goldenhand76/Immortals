@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	MQTTBrokerAddress = "broker:1883"
+	MQTTBrokerAddress = "localhost:1883"
 	MQTTTopic         = "test/"
 )
 
@@ -23,7 +23,7 @@ func SetupMQTTConsumer(store *kafka.NotificationStore) {
 	opts := mqtt.NewClientOptions()
 	opts.SetClientID("Go Client")
 	opts.SetBinaryWill("/Go/Will", payload, qos, false)
-	opts.AddBroker("broker:1883")
+	opts.AddBroker(MQTTBrokerAddress)
 
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
