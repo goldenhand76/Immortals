@@ -3,11 +3,17 @@ package main
 import (
 	"Immortals/internal/kafka"
 	"Immortals/internal/mqtt"
+	"Immortals/pkg/api/node"
 	"context"
+	"log"
 	"sync"
 )
 
 func main() {
+	err := node.DiscoverNode("esp32.local")
+	if err != nil {
+		log.Printf("Failed to discover the node %v", err)
+	}
 
 	store := &kafka.NotificationStore{
 		Data: make(kafka.UserNotifications),
@@ -30,6 +36,4 @@ func main() {
 
 	wg.Wait()
 	// Discover nodes using QR code
-
-	// node.DiscoverNode("esp32.local")
 }

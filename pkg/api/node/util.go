@@ -2,25 +2,31 @@ package node
 
 import (
 	"bytes"
+	"context"
 	"errors"
-	"log"
 	"net/http"
+	"time"
 )
 
 var ErrNoNodeFound = errors.New("no messages found")
 
-func DiscoverNode(deviceID string) {
+func DiscoverNode(deviceID string) error {
 	url := "http://" + deviceID + "/ip"
 	jsonStr := []byte(`{"brokerIP": "192.168.0.26"}`)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		log.Printf("failed to unmarshal notification: %v", err)
+		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("failed to unmarshal notification: %v", err)
+		return err
 	}
 	defer resp.Body.Close()
+	return nil
 }
