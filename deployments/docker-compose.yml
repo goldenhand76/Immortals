@@ -4,7 +4,9 @@ services:
 
 
   backend:
-    build: .
+    build: 
+      context: ../
+      dockerfile: build/package/Dockerfile
     container_name: backend-Immo
     ports:
       - "8088:8088"
@@ -13,8 +15,8 @@ services:
     image: eclipse-mosquitto:2.0
     container_name: mosquitto-Immo
     volumes:
-      - ./Mosquitto/config/:/mosquitto/config/
-      - ./Mosquitto/log/:/mosquitto/log/
-      - ./Mosquitto/data:/mosquitto/data/
+      - ../Mosquitto/config/:/mosquitto/config/
+      - ../Mosquitto/log/:/mosquitto/log/
+      - ../Mosquitto/data:/mosquitto/data/
     ports:
       - "1883:1883"
