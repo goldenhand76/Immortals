@@ -1,48 +1,67 @@
 package main
 
 import (
-	"bytes"
+	"Immortals/internal/kafka"
+	"Immortals/internal/mqtt"
+	"Immortals/pkg/api/node"
+	"Immortals/pkg/models"
+	"context"
+	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
-	_ "database/sql"
-	_ "encoding/json"
-	_ "log"
-
-	"github.com/IBM/sarama"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gin-gonic/gin"
-
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/gorilla/mux"
 )
 
-func onMessageReceived(client mqtt.Client, message mqtt.Message) {
-	fmt.Printf("Received message: %s from topic: %s\n", message.Payload(), message.Topic())
+const ConsumerPort = ":8081"
+
+func handleNotifications(ctx *gin.Context, store *kafka.NotificationStore) {
+	userID := ctx.Param("userID")
+	if userID == "" {
+		ctx.JSON(http.StatusNotFound, gin.H{"message": "No user ID provided"})
+		return
+	}
+
+	notes := store.Get(userID)
+	if len(notes) == 0 {
+		ctx.JSON(http.StatusOK, gin.H{
+			"message":       "No notifications found for user",
+			"notifications": []models.Notification{},
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"notifications": notes})
+}
+
+// ============== HELPER FUNCTIONS ==============
+var ErrNoMessagesFound = errors.New("no messages found")
+
+func getUserIDFromRequest(ctx *gin.Context) (string, error) {
+	userID := ctx.Param("userID")
+	if userID == "" {
+		return "", ErrNoMessagesFound
+	}
+	return userID, nil
 }
 
 func main() {
-	// mqtt topic
-	topic := "test/"
-	payload := []byte("Bye")
-	var qos byte = 1
 
-	opts := mqtt.NewClientOptions()
-	opts.SetClientID("Go Client")
-	opts.SetBinaryWill("/Go/Will", payload, qos, false)
-	opts.AddBroker("broker:1883")
-
-	client := mqtt.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		panic(fmt.Sprintf("Error connecting to MQTT broker:", token.Error()))
+	store := &kafka.NotificationStore{
+		Data: make(kafka.UserNotifications),
 	}
 
-	if token := client.Subscribe(topic, 0, onMessageReceived); token.Wait() && token.Error() != nil {
-		panic(fmt.Sprintf("Error subscribing to topic:", token.Error()))
-	}
-	fmt.Println("Subscribed to topic:", topic)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	discoverDevice("esp32.local")
+	// Start Kafka consumer
+	go kafka.SetupConsumerGroup(ctx, store)
+
+	// Start MQTT consumer
+	go mqtt.SetupMQTTConsumer(store)
+
+	node.DiscoverNode("esp32.local")
 
 	router := gin.Default()
 	// Endpoint to submit Kafka broker address via POST request
@@ -58,7 +77,7 @@ func main() {
 		}
 
 		// Check if the broker is available
-		if isBrokerAvailable(kafkaBroker.Address) {
+		if kafka.IsBrokerAvailable(kafkaBroker.Address) {
 			fmt.Println("Kafka broker is available.")
 			c.JSON(http.StatusOK, gin.H{"status": "running"})
 		} else {
@@ -66,36 +85,17 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"status": "failed"})
 		}
 	})
+
+	router.GET("/notifications/:userID", func(ctx *gin.Context) {
+		handleNotifications(ctx, store)
+	})
+
+	fmt.Printf("Kafka CONSUMER (Group: %s) 👥📥 "+
+		"started at http://localhost%s\n", kafka.ConsumerGroup, ConsumerPort)
+
+	if err := router.Run(ConsumerPort); err != nil {
+		log.Printf("failed to run the server: %v", err)
+	}
 	// Run the server
 	router.Run("0.0.0.0:8088")
-}
-
-func isBrokerAvailable(broker string) bool {
-	// Create configuration for the Kafka client
-	config := sarama.NewConfig()
-	config.Version = sarama.V2_6_0_0 // Set the Kafka version
-
-	// Create a new Kafka client
-	client, err := sarama.NewClient([]string{broker}, config)
-	if err != nil {
-		fmt.Println("Error creating Kafka client:", err)
-		return false
-	}
-	defer client.Close()
-
-	return true
-}
-
-func discoverDevice(deviceID string) bool {
-	url := "http://" + deviceID + "/ip"
-	jsonStr := []byte(`{"brokerIP": "192.168.0.26"}`)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	return true
 }
