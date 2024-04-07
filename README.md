@@ -1,4 +1,4 @@
-<img src='Images/Achaemenid_soldiers.png' width='250'>
+<img src='assets/Achaemenid_soldiers.png' width='250'>
 
 # Immortals: Empowering Automated Control of IoT Devices
 
