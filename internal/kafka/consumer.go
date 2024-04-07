@@ -19,7 +19,6 @@ const (
 	ConsumerGroup      = "notifications-group"
 	ConsumerTopic      = "notifications"
 	KafkaServerAddress = "localhost:9092"
-	ConsumerPort       = ":8081"
 )
 
 // ============== HELPER FUNCTIONS ==============
@@ -77,9 +76,8 @@ func initializeConsumerGroup() (sarama.ConsumerGroup, error) {
 	consumerGroup, err := sarama.NewConsumerGroup(
 		[]string{KafkaServerAddress}, ConsumerGroup, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize consumer group: %w", err)
+		return nil, fmt.Errorf("failed to initialize kafka consumer group: %w", err)
 	}
-
 	return consumerGroup, nil
 }
 
@@ -88,6 +86,7 @@ func SetupConsumerGroup(ctx context.Context, store *NotificationStore) {
 	if err != nil {
 		log.Printf("initialization error: %v", err)
 	}
+	fmt.Println("Successfully initialized kafka consumer group to topic:")
 	defer consumerGroup.Close()
 
 	consumer := &Consumer{
