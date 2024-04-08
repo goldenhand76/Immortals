@@ -3,9 +3,10 @@ name: immortals
 services:
 
   backend:
-    build: 
-      context: ../
-      dockerfile: build/package/Dockerfile
+    # build: 
+    #   context: ../
+    #   dockerfile: build/package/Dockerfile
+    image: ghcr.io/goldenhand76/immortals:0.0.1
     container_name: backend-Immo
 
   broker:
