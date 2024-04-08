@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	ImmoService_DiscoverNode_FullMethodName = "/immo.ImmoService/DiscoverNode"
+	ImmoService_ListNodes_FullMethodName    = "/immo.ImmoService/ListNodes"
 )
 
 // ImmoServiceClient is the client API for ImmoService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ImmoServiceClient interface {
 	DiscoverNode(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error)
+	ListNodes(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
 }
 
 type immoServiceClient struct {
@@ -46,11 +48,21 @@ func (c *immoServiceClient) DiscoverNode(ctx context.Context, in *NodeRequest, o
 	return out, nil
 }
 
+func (c *immoServiceClient) ListNodes(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error) {
+	out := new(ListResponse)
+	err := c.cc.Invoke(ctx, ImmoService_ListNodes_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ImmoServiceServer is the server API for ImmoService service.
 // All implementations must embed UnimplementedImmoServiceServer
 // for forward compatibility
 type ImmoServiceServer interface {
 	DiscoverNode(context.Context, *NodeRequest) (*NodeResponse, error)
+	ListNodes(context.Context, *ListRequest) (*ListResponse, error)
 	mustEmbedUnimplementedImmoServiceServer()
 }
 
@@ -60,6 +72,9 @@ type UnimplementedImmoServiceServer struct {
 
 func (UnimplementedImmoServiceServer) DiscoverNode(context.Context, *NodeRequest) (*NodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DiscoverNode not implemented")
+}
+func (UnimplementedImmoServiceServer) ListNodes(context.Context, *ListRequest) (*ListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListNodes not implemented")
 }
 func (UnimplementedImmoServiceServer) mustEmbedUnimplementedImmoServiceServer() {}
 
@@ -92,6 +107,24 @@ func _ImmoService_DiscoverNode_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ImmoService_ListNodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ImmoServiceServer).ListNodes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ImmoService_ListNodes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ImmoServiceServer).ListNodes(ctx, req.(*ListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ImmoService_ServiceDesc is the grpc.ServiceDesc for ImmoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +135,10 @@ var ImmoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DiscoverNode",
 			Handler:    _ImmoService_DiscoverNode_Handler,
+		},
+		{
+			MethodName: "ListNodes",
+			Handler:    _ImmoService_ListNodes_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

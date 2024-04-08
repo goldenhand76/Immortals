@@ -4,17 +4,12 @@ import (
 	"Immortals/internal/immo"
 	"Immortals/internal/kafka"
 	"Immortals/internal/mqtt"
-	_ "Immortals/pkg/api/node"
+	_ "Immortals/pkg/node"
 	"context"
 	"sync"
 )
 
 func main() {
-	// err := node.DiscoverNode("esp32.local")
-	// if err != nil {
-	// 	log.Printf("Failed to discover the node %v", err)
-	// }
-
 	store := &kafka.NotificationStore{
 		Data: make(kafka.UserNotifications),
 	}

@@ -6,6 +6,7 @@ option go_package = "./immo";
 
 service ImmoService {
   rpc DiscoverNode(NodeRequest) returns (NodeResponse);
+  rpc ListNodes(ListRequest) returns (ListResponse);
 }
 
 message NodeRequest {
@@ -17,3 +18,9 @@ message NodeResponse {
   string node_id = 1;
   string error = 2;
 }
+
+message ListResponse {
+  repeated NodeResponse nodes = 1;
+}
+
+message ListRequest {}

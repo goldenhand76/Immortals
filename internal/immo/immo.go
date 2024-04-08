@@ -2,6 +2,7 @@ package immo
 
 import (
 	pb "Immortals/api/gRPC/immo/immo"
+	"Immortals/pkg/node"
 	"context"
 	"fmt"
 	"log"
@@ -15,11 +16,21 @@ type server struct {
 }
 
 func (s *server) DiscoverNode(ctx context.Context, req *pb.NodeRequest) (*pb.NodeResponse, error) {
-	fmt.Printf("Discovering node with address %s and name %s\n", req.Address, req.Name)
-	return &pb.NodeResponse{
-		NodeId: "3434314",
-		Error:  "",
-	}, nil
+	log.Printf("Discovering node with address %s and name %s\n", req.Address, req.Name)
+	err := node.Discover(req.Address)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.NodeResponse{NodeId: "3434314", Error: ""}, nil
+}
+
+func (s *server) ListNodes(ctx context.Context, req *pb.ListRequest) (*pb.ListResponse, error) {
+	err := node.List()
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("Nodes : ")
+	return &pb.ListResponse{}, nil
 }
 
 func SetupImmo() {
