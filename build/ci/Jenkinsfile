@@ -1,0 +1,27 @@
+pipeline {
+    agent any
+
+    triggers {
+        pollSCM '* * * * *'
+    }
+
+    stages {
+        stage('Checkout'){
+            steps {
+                git 'https://github.com/goldenhand76/Immortals.git'
+            }
+        }
+
+        stage('Build'){
+            steps {
+                sh 'go build ./cmd/web/.'
+            }
+        }
+
+        stage('Test'){
+            steps{
+                sh 'ls'
+            }
+        }
+    }   
+}
