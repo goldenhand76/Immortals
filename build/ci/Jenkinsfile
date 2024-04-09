@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Clone'){
             steps {
-                git branch: 'main' url: 'https://github.com/goldenhand76/Immortals.git'
+                git branch: 'main', url: 'https://github.com/goldenhand76/Immortals.git'
             }
         }
 
