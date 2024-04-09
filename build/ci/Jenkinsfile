@@ -6,21 +6,27 @@ pipeline {
     }
 
     stages {
-        stage('Checkout'){
+        stage('Clone'){
             steps {
-                git 'https://github.com/goldenhand76/Immortals.git'
+                git branch: 'main'
+                url: 'https://github.com/goldenhand76/Immortals.git'
             }
         }
 
         stage('Build'){
             steps {
-                sh 'go build ./cmd/web/.'
+                sh '''
+                docker build -f .\build\package\Dockerfile -t ghcr.io/goldenhand76/immortals:${BUILD_NUMBER} .
+                '''
             }
         }
 
         stage('Test'){
             steps{
-                sh 'ls'
+                sh '''
+                docker run -it immortals:${BUILD_NUMBER}
+                curl localhost:5000
+                '''
             }
         }
     }   
