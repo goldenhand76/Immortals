@@ -1,6 +1,9 @@
 pipeline {
     agent { 
-        docker { image 'golang:1.22-alpine'}
+        node {
+            label 'docker-agent-golang'
+            }
+        // docker { image 'golang:1.22-alpine'}
       }
 
     triggers {
