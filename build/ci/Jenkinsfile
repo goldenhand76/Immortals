@@ -1,11 +1,10 @@
 pipeline {
-    agent any 
-    // { 
-    //     node {
-    //         label 'docker-agent-golang'
-    //         }
-    //     docker { image 'golang:1.22-alpine'}
-    //   }
+    agent { 
+        node {
+            label 'docker-agent-alpine'
+            }
+        // docker { image 'jenkins/agent:alpine-jdk11'}
+      }
 
     triggers {
         pollSCM '* * * * *'
