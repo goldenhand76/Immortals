@@ -1,10 +1,11 @@
 pipeline {
-    agent { 
-        node {
-            label 'docker-agent-golang'
-            }
-        // docker { image 'golang:1.22-alpine'}
-      }
+    agent any 
+    // { 
+    //     node {
+    //         label 'docker-agent-golang'
+    //         }
+    //     docker { image 'golang:1.22-alpine'}
+    //   }
 
     triggers {
         pollSCM '* * * * *'
@@ -22,6 +23,7 @@ pipeline {
         stage('Build'){
             steps {
                 sh '''
+                go version
                 docker build -f ./build/package/Dockerfile -t ghcr.io/goldenhand76/immortals:${BUILD_NUMBER} .
                 '''
             }
