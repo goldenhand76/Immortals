@@ -1,13 +1,13 @@
 pipeline {
     agent { 
-        node {
-            label 'docker-agent-alpine'
-            }
+        docker { image 'golang:1.22-alpine'}
       }
 
     triggers {
         pollSCM '* * * * *'
     }
+
+    tools { go '1.22.1'}
 
     stages {
         stage('Clone'){
@@ -27,8 +27,8 @@ pipeline {
         stage('Test'){
             steps{
                 sh '''
-                docker run -it immortals:${BUILD_NUMBER}
-                curl localhost:5000
+                go build ./cmd/web/main.go
+                ./main.go
                 '''
             }
         }
