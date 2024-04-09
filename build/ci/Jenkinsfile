@@ -1,10 +1,11 @@
 pipeline {
-    agent { 
-        node {
-            label 'docker-agent-alpine'
-            }
+    agent any
+    // { 
+        // node {
+        //     label 'docker-agent-alpine'
+        //     }
         // docker { image 'jenkins/agent:alpine-jdk11'}
-      }
+    //   }
 
     triggers {
         pollSCM '* * * * *'
@@ -23,7 +24,7 @@ pipeline {
             steps {
                 sh '''
                 go version
-                docker build -f ./build/package/Dockerfile -t ghcr.io/goldenhand76/immortals:${BUILD_NUMBER} .
+                docker build -f ./build/package/Dockerfile -t goldenhand76/immortals:0.0.1 .
                 '''
             }
         }
