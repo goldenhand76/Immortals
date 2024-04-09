@@ -1,11 +1,10 @@
 pipeline {
-    agent any
-    // { 
-        // node {
-        //     label 'docker-agent-alpine'
-        //     }
+    agent { 
+        node {
+            label 'raspberrypi'
+            }
         // docker { image 'jenkins/agent:alpine-jdk11'}
-    //   }
+       }
 
     triggers {
         pollSCM '* * * * *'
