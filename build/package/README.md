@@ -3,7 +3,7 @@
 ## DockerHub
 ### Build
 ```bash
-docker build -f .\build\package\Dockerfile -t goldenhand/immortals .
+docker build -f .\build\package\Dockerfile -t goldenhand/immortals:0.0.1 .
 ```
 ### Push
 ```bash

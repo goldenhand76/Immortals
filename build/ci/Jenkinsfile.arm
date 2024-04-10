@@ -1,0 +1,51 @@
+pipeline {
+    agent { 
+        node {
+            label 'raspberrypi'
+            }
+        // docker { image 'jenkins/agent:alpine-jdk11'}
+       }
+
+    triggers {
+        pollSCM '* * * * *'
+    }
+
+    tools { go '1.22.1'}
+
+    stages {
+        stage('VPN'){
+            steps {
+                sh '''
+                sudo apt update
+                sudo apt install snapd
+                sudo snap install core
+                sudo snap install v2ray-core
+                '''
+            }
+        }
+
+        stage('Clone'){
+            steps {
+                git branch: 'main', url: 'https://github.com/goldenhand76/Immortals.git'
+            }
+        }
+
+        stage('Build'){
+            steps {
+                sh '''
+                go version
+                docker build -f ./build/package/Dockerfile -t goldenhand76/immortals:0.0.1 .
+                '''
+            }
+        }
+
+        stage('Test'){
+            steps{
+                sh '''
+                go build ./cmd/web/main.go
+                ./main.go
+                '''
+            }
+        }
+    }   
+}
