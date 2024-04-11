@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -38,5 +39,6 @@ func Discover(deviceID string) error {
 }
 
 func List() error {
+	fmt.Println("Listing containers")
 	return nil
 }

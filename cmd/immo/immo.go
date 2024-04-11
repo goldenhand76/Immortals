@@ -79,9 +79,3 @@ func main() {
 		return
 	}
 }
-
-func listContainers() error {
-	// Implement listContainers logic here
-	fmt.Println("Listing containers")
-	return nil
-}
