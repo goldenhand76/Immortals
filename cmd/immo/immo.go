@@ -32,15 +32,21 @@ func main() {
 	client := pb.NewImmoServiceClient(conn)
 
 	// Parse command-line flags
-	discoverCmd := flag.NewFlagSet("deploy", flag.ExitOnError)
-	nameFlag := discoverCmd.String("name", "", "node name")
-	addressFlag := discoverCmd.String("address", "", "node address")
+	discoverCmd := flag.NewFlagSet("discover", flag.ExitOnError)
+	dAddressFlag := discoverCmd.String("address", "", "node address")
 
+	// Parse command-line flags
+	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
+	nameFlag := discoverCmd.String("name", "", "node name")
+	aAddressFlag := discoverCmd.String("address", "", "node address")
+
+	// Parse command-line flags
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Usage:")
-		fmt.Println("  immo discover --name <name> --address <address>")
+		fmt.Println("  immo discover --address <address>")
+		fmt.Println("  immo add --name <name> --address <address>")
 		fmt.Println("  immo list")
 		fmt.Println("  immo stop --name <name>")
 		fmt.Println("  immo remove --name <name>")
@@ -51,13 +57,29 @@ func main() {
 	switch os.Args[1] {
 	case "discover":
 		discoverCmd.Parse(os.Args[2:])
-		if *addressFlag == "" || *nameFlag == "" {
+		if *dAddressFlag == "" || *nameFlag == "" {
 			discoverCmd.PrintDefaults()
 			return
 		}
 		resp, err := client.DiscoverNode(context.Background(), &pb.NodeRequest{
 			Name:    *nameFlag,
-			Address: *addressFlag,
+			Address: *dAddressFlag,
+		})
+		if err != nil {
+			fmt.Println("Error discovering node:", err)
+			return
+		}
+		fmt.Printf("Container deployed with ID: %s\n", resp.NodeId)
+
+	case "add":
+		addCmd.Parse(os.Args[2:])
+		if *aAddressFlag == "" || *nameFlag == "" {
+			addCmd.PrintDefaults()
+			return
+		}
+		resp, err := client.DiscoverNode(context.Background(), &pb.NodeRequest{
+			Name:    *nameFlag,
+			Address: *aAddressFlag,
 		})
 		if err != nil {
 			fmt.Println("Error discovering node:", err)

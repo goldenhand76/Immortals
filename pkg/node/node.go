@@ -17,25 +17,31 @@ func Discover(nodeID string) error {
 	url := "http://" + nodeID + "/ip"
 	jsonStr := []byte(`{"brokerIP": "192.168.0.26"}`)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return err
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+	return nil
+}
+
+func Add() error {
+	fmt.Println("Adding Node")
 	opts := db.NewDbOptions()
 	opts.SetName("Ali")
 	r := db.NewClient(opts)
 	r.Connect()
-
-	defer resp.Body.Close()
 	return nil
 }
 

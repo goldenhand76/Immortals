@@ -26,7 +26,7 @@ func (db *db) Connect() {
 
 // Commit implements Db.
 func (db *db) Commit() {
-
+	panic("unimplemented")
 }
 
 // IsValid implements Db.
