@@ -7,18 +7,14 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-)
 
-type Node struct {
-	Name     string `json:"name"`
-	ClientID int    `json:"clientId"`
-	Address  string `json:"address"`
-}
+	db "Immortals/internal/database"
+)
 
 var ErrNoNodeFound = errors.New("no messages found")
 
-func Discover(deviceID string) error {
-	url := "http://" + deviceID + "/ip"
+func Discover(nodeID string) error {
+	url := "http://" + nodeID + "/ip"
 	jsonStr := []byte(`{"brokerIP": "192.168.0.26"}`)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -34,6 +30,11 @@ func Discover(deviceID string) error {
 	if err != nil {
 		return err
 	}
+	opts := db.NewDbOptions()
+	opts.SetName("Ali")
+	r := db.NewClient(opts)
+	r.Connect()
+
 	defer resp.Body.Close()
 	return nil
 }
