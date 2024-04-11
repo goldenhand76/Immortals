@@ -37,7 +37,7 @@ func Discover(nodeID string) error {
 }
 
 func Add() error {
-	fmt.Println("Adding Node")
+	fmt.Println("Adding Node...")
 	opts := db.NewDbOptions()
 	opts.SetName("Ali")
 	r := db.NewClient(opts)
