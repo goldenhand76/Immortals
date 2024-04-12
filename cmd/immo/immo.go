@@ -37,8 +37,8 @@ func main() {
 
 	// Parse command-line flags
 	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
-	nameFlag := discoverCmd.String("name", "", "node name")
-	aAddressFlag := discoverCmd.String("address", "", "node address")
+	nameFlag := addCmd.String("name", "", "node name")
+	aAddressFlag := addCmd.String("address", "", "node address")
 
 	// Parse command-line flags
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
@@ -57,19 +57,18 @@ func main() {
 	switch os.Args[1] {
 	case "discover":
 		discoverCmd.Parse(os.Args[2:])
-		if *dAddressFlag == "" || *nameFlag == "" {
+		if *dAddressFlag == "" {
 			discoverCmd.PrintDefaults()
 			return
 		}
 		resp, err := client.DiscoverNode(context.Background(), &pb.NodeRequest{
-			Name:    *nameFlag,
 			Address: *dAddressFlag,
 		})
 		if err != nil {
 			fmt.Println("Error discovering node:", err)
 			return
 		}
-		fmt.Printf("Container deployed with ID: %s\n", resp.NodeId)
+		fmt.Printf("Node Discovered: %s\n", resp)
 
 	case "add":
 		addCmd.Parse(os.Args[2:])
