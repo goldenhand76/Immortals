@@ -16,7 +16,9 @@ message NodeRequest {
 
 message NodeResponse {
   string node_id = 1;
-  string error = 2;
+  map<string, string> sensor = 2;
+  map<string, string> actuator = 3;
+  string error = 4;
 }
 
 message ListResponse {
