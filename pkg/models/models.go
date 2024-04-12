@@ -11,6 +11,12 @@ type Notification struct {
 	Message string `json:"message"`
 }
 
+type NodeData struct {
+	NodeID   string            `json:"nodeId,omitempty"` // Node ID that set on device and not changable Use omitempty to omit this field if it's empty
+	Sensor   map[string]string `json:"sensor"`           // List of sensors that exists and their topics
+	Actuator map[string]string `json:"actuator"`         // List of actuators that exists on node and their topics
+}
+
 type Device struct {
 	ID    int
 	Name  string
