@@ -1,7 +1,7 @@
 package database
 
 type DbOptions struct {
-	name string
+	filePath string
 }
 
 func NewDbOptions() *DbOptions {
@@ -9,7 +9,7 @@ func NewDbOptions() *DbOptions {
 	return o
 }
 
-func (o *DbOptions) SetName(name string) *DbOptions {
-	o.name = "reza"
+func (o *DbOptions) SetFilePath(filePath string) *DbOptions {
+	o.filePath = filePath
 	return o
 }
