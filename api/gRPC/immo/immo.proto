@@ -6,6 +6,7 @@ option go_package = "./immo";
 
 service ImmoService {
   rpc DiscoverNode(NodeRequest) returns (NodeResponse);
+  rpc AddNode(NodeRequest) returns (NodeResponse);
   rpc ListNodes(ListRequest) returns (ListResponse);
 }
 

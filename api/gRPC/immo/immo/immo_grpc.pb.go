@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	ImmoService_DiscoverNode_FullMethodName = "/immo.ImmoService/DiscoverNode"
+	ImmoService_AddNode_FullMethodName      = "/immo.ImmoService/AddNode"
 	ImmoService_ListNodes_FullMethodName    = "/immo.ImmoService/ListNodes"
 )
 
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ImmoServiceClient interface {
 	DiscoverNode(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error)
+	AddNode(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error)
 	ListNodes(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
 }
 
@@ -48,6 +50,15 @@ func (c *immoServiceClient) DiscoverNode(ctx context.Context, in *NodeRequest, o
 	return out, nil
 }
 
+func (c *immoServiceClient) AddNode(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error) {
+	out := new(NodeResponse)
+	err := c.cc.Invoke(ctx, ImmoService_AddNode_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *immoServiceClient) ListNodes(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error) {
 	out := new(ListResponse)
 	err := c.cc.Invoke(ctx, ImmoService_ListNodes_FullMethodName, in, out, opts...)
@@ -62,6 +73,7 @@ func (c *immoServiceClient) ListNodes(ctx context.Context, in *ListRequest, opts
 // for forward compatibility
 type ImmoServiceServer interface {
 	DiscoverNode(context.Context, *NodeRequest) (*NodeResponse, error)
+	AddNode(context.Context, *NodeRequest) (*NodeResponse, error)
 	ListNodes(context.Context, *ListRequest) (*ListResponse, error)
 	mustEmbedUnimplementedImmoServiceServer()
 }
@@ -72,6 +84,9 @@ type UnimplementedImmoServiceServer struct {
 
 func (UnimplementedImmoServiceServer) DiscoverNode(context.Context, *NodeRequest) (*NodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DiscoverNode not implemented")
+}
+func (UnimplementedImmoServiceServer) AddNode(context.Context, *NodeRequest) (*NodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddNode not implemented")
 }
 func (UnimplementedImmoServiceServer) ListNodes(context.Context, *ListRequest) (*ListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListNodes not implemented")
@@ -107,6 +122,24 @@ func _ImmoService_DiscoverNode_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ImmoService_AddNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ImmoServiceServer).AddNode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ImmoService_AddNode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ImmoServiceServer).AddNode(ctx, req.(*NodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ImmoService_ListNodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListRequest)
 	if err := dec(in); err != nil {
@@ -135,6 +168,10 @@ var ImmoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DiscoverNode",
 			Handler:    _ImmoService_DiscoverNode_Handler,
+		},
+		{
+			MethodName: "AddNode",
+			Handler:    _ImmoService_AddNode_Handler,
 		},
 		{
 			MethodName: "ListNodes",
