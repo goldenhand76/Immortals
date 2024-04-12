@@ -3,17 +3,20 @@ package node
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
 	db "Immortals/internal/database"
+	"Immortals/pkg/models"
 )
 
 var ErrNoNodeFound = errors.New("no messages found")
 
-func Discover(nodeID string) error {
+func Discover(nodeID string) (*models.NodeData, error) {
 	url := "http://" + nodeID + "/ip"
 	jsonStr := []byte(`{"brokerIP": "192.168.0.26"}`)
 
@@ -22,7 +25,7 @@ func Discover(nodeID string) error {
 
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -30,19 +33,42 @@ func Discover(nodeID string) error {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
-	return nil
+
+	if resp.StatusCode == http.StatusOK {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println("Error", err)
+			return nil, err
+		}
+		var data models.NodeData
+		data.NodeID = nodeID
+		if err := json.Unmarshal(body, &data); err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
+		return &data, nil
+	}
+
+	return nil, nil
 }
 
-func Add() error {
+func Add(nodeID string) (*models.NodeData, error) {
 	fmt.Println("Adding Node...")
+	nodeData, err := Discover(nodeID)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
+	}
 	opts := db.NewDbOptions()
-	opts.SetName("Ali")
 	r := db.NewClient(opts)
-	r.Connect()
-	return nil
+
+	if err := r.Write(nodeData); err != nil {
+		return nil, err
+	}
+	return nodeData, nil
 }
 
 func List() error {
