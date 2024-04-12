@@ -16,12 +16,30 @@ type server struct {
 }
 
 func (s *server) DiscoverNode(ctx context.Context, req *pb.NodeRequest) (*pb.NodeResponse, error) {
-	log.Printf("Discovering node with address %s and name %s\n", req.Address, req.Name)
-	err := node.Discover(req.Address)
+	log.Printf("Discovering node with address %s\n", req.Address)
+	nodeData, err := node.Discover(req.Address)
+	fmt.Println("node Data:", nodeData)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.NodeResponse{NodeId: "3434314", Error: ""}, nil
+	return &pb.NodeResponse{
+		NodeId:   req.Address,
+		Sensor:   nodeData.Sensor,
+		Actuator: nodeData.Actuator,
+		Error:    ""}, nil
+}
+
+func (s *server) AddNode(ctx context.Context, req *pb.NodeRequest) (*pb.NodeResponse, error) {
+	log.Printf("Adding node with address %s and name %s\n", req.Address, req.Name)
+	nodeData, err := node.Add(req.Address)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.NodeResponse{
+		NodeId:   req.Address,
+		Sensor:   nodeData.Sensor,
+		Actuator: nodeData.Actuator,
+		Error:    ""}, nil
 }
 
 func (s *server) ListNodes(ctx context.Context, req *pb.ListRequest) (*pb.ListResponse, error) {
