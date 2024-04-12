@@ -5,7 +5,9 @@ type DbOptions struct {
 }
 
 func NewDbOptions() *DbOptions {
-	o := &DbOptions{}
+	o := &DbOptions{
+		filePath: "internal\\database\\json\\Nodes.json",
+	}
 	return o
 }
 

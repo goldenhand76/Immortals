@@ -2,13 +2,21 @@ package database
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
+
+	"Immortals/pkg/models"
 )
 
+var ErrNoNodeFound = errors.New("no messages found")
+
 type Db interface {
-	Read() (map[string]interface{}, error)
+	Read(nodeId string) (map[string]interface{}, error)
 	// Commit catches the node data; It doesnt save data until the save called.
-	Write(map[string]interface{}) error
+	ReadAll() ([]map[string]interface{}, error)
+
+	Write(*models.NodeData) error
 	// Checks if any error or duplicity exists in the data
 }
 
@@ -17,8 +25,8 @@ type db struct {
 	options DbOptions
 }
 
-// Connect implements Db.
-func (db *db) Read() (map[string]interface{}, error) {
+// ReadAll implements Db.
+func (db *db) ReadAll() ([]map[string]interface{}, error) {
 	// Read JSON data from file
 	data, err := os.ReadFile(db.options.filePath)
 	if err != nil {
@@ -26,7 +34,7 @@ func (db *db) Read() (map[string]interface{}, error) {
 	}
 
 	// Unmarshal JSON data into a map
-	var jsonData map[string]interface{}
+	var jsonData []map[string]interface{}
 	if err := json.Unmarshal(data, &jsonData); err != nil {
 		return nil, err
 	}
@@ -34,11 +42,26 @@ func (db *db) Read() (map[string]interface{}, error) {
 	return jsonData, nil
 }
 
-// Commit implements Db.
-func (db *db) Write(jsonData map[string]interface{}) error {
-	// Marshal the JSON data
-	jsonBytes, err := json.MarshalIndent(jsonData, "", "    ")
+// Connect implements Db.
+func (db *db) Read(nodeId string) (map[string]interface{}, error) {
+	jsonData, err := db.ReadAll()
 	if err != nil {
+		return nil, err
+	}
+	for _, item := range jsonData {
+		if value, ok := item["nodeId"]; ok && value == nodeId {
+			return item, nil
+		}
+	}
+	return nil, ErrNoNodeFound
+}
+
+// Commit implements Db.
+func (db *db) Write(nodeData *models.NodeData) error {
+	// Marshal the JSON data
+	jsonBytes, err := json.MarshalIndent(nodeData, "", "    ")
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
 		return err
 	}
 
@@ -47,6 +70,7 @@ func (db *db) Write(jsonData map[string]interface{}) error {
 		return err
 	}
 
+	fmt.Printf("Node data written to %s", db.options.filePath)
 	return nil
 }
 
