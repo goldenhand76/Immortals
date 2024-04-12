@@ -68,7 +68,7 @@ func main() {
 			fmt.Println("Error discovering node:", err)
 			return
 		}
-		fmt.Printf("Node Discovered: %s\n", resp)
+		fmt.Printf("Node Successfully Discovered: %s\n", resp)
 
 	case "add":
 		addCmd.Parse(os.Args[2:])
