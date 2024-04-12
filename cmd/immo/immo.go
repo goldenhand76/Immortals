@@ -76,7 +76,7 @@ func main() {
 			addCmd.PrintDefaults()
 			return
 		}
-		resp, err := client.DiscoverNode(context.Background(), &pb.NodeRequest{
+		resp, err := client.AddNode(context.Background(), &pb.NodeRequest{
 			Name:    *nameFlag,
 			Address: *aAddressFlag,
 		})
@@ -84,7 +84,7 @@ func main() {
 			fmt.Println("Error discovering node:", err)
 			return
 		}
-		fmt.Printf("Container deployed with ID: %s\n", resp.NodeId)
+		fmt.Printf("Node Successfully Added: %s\n", resp)
 
 	case "list":
 		listCmd.Parse(os.Args[2:])
