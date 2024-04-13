@@ -15,11 +15,21 @@ message NodeRequest {
   string address = 2;
 }
 
+message SensorResponse {
+  string name = 1;
+  string topic = 2;
+}
+
+message ActuatorResponse {
+  string name = 1;
+  string topic = 2;
+}
+
 message NodeResponse {
-  string node_name = 1;
-  string node_id = 2;
-  map<string, string> sensor = 3;
-  map<string, string> actuator = 4;
+  string name = 1;
+  string id = 2;
+  repeated SensorResponse sensor = 3;
+  repeated ActuatorResponse actuator = 4;
   string error = 5;
 }
 
