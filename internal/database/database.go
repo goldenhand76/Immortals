@@ -11,24 +11,27 @@ import (
 
 var ErrNoNodeFound = errors.New("no messages found")
 
-type Db interface {
-	Read(nodeId string) (map[string]interface{}, error)
+type DbContext interface {
+	Read(nodeId string) (*models.NodeData, error)
 	// Commit catches the node data; It doesnt save data until the save called.
-	ReadAll() ([]map[string]interface{}, error)
+	ReadAll() ([]models.NodeData, error)
 
-	Write([]map[string]interface{}) error
+	Write(*[]models.NodeData) error
 	// Checks if any error or duplicity exists in the data
 
 	Append(*models.NodeData) error
+
+	NotExists(nodeId string) bool
 }
 
 type db struct {
+	nodes []models.NodeData
 	// lastCommit atomic.Value // time.Time - the last time a Node was successfully commited
 	options DbOptions
 }
 
 // ReadAll implements Db.
-func (db *db) ReadAll() ([]map[string]interface{}, error) {
+func (db *db) ReadAll() ([]models.NodeData, error) {
 	// Read JSON data from file
 	data, err := os.ReadFile(db.options.filePath)
 	if err != nil {
@@ -36,8 +39,8 @@ func (db *db) ReadAll() ([]map[string]interface{}, error) {
 	}
 
 	// Unmarshal JSON data into a map
-	var jsonData []map[string]interface{}
-	if err := json.Unmarshal(data, &jsonData); err != nil {
+	var jsonData []models.NodeData
+	if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
 		return nil, err
 	}
 
@@ -45,21 +48,17 @@ func (db *db) ReadAll() ([]map[string]interface{}, error) {
 }
 
 // Connect implements Db.
-func (db *db) Read(nodeId string) (map[string]interface{}, error) {
-	jsonData, err := db.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-	for _, item := range jsonData {
-		if value, ok := item["nodeId"]; ok && value == nodeId {
-			return item, nil
+func (db *db) Read(nodeId string) (*models.NodeData, error) {
+	for _, item := range db.nodes {
+		if item.NodeID == nodeId {
+			return &item, nil
 		}
 	}
 	return nil, ErrNoNodeFound
 }
 
 // Commit implements Db.
-func (db *db) Write(nodeData []map[string]interface{}) error {
+func (db *db) Write(nodeData *[]models.NodeData) error {
 	// Marshal the JSON data
 	jsonBytes, err := json.MarshalIndent(nodeData, "", "    ")
 	if err != nil {
@@ -76,39 +75,33 @@ func (db *db) Write(nodeData []map[string]interface{}) error {
 	return nil
 }
 
+// NotExists implements Db.
+func (db *db) NotExists(nodeId string) bool {
+	for _, item := range db.nodes {
+		if item.NodeID == nodeId {
+			return false
+		}
+	}
+	return true
+}
+
 // WriteMany implements Db.
 func (db *db) Append(nodeData *models.NodeData) error {
-	existingData, err := db.ReadAll()
-	if err != nil {
-		fmt.Println("Error Retrieving nodes:", err)
-		return err
-	}
+	db.nodes = append(db.nodes, *nodeData)
 
-	// Convert the NodeData struct to a map[string]interface{} format
-	nodeDataMap := make(map[string]interface{})
-	nodeDataMap["nodeId"] = nodeData.NodeID
-
-	sensorMap := make(map[string]interface{})
-	for k, v := range nodeData.Sensor {
-		sensorMap[k] = v
-	}
-	nodeDataMap["sensor"] = sensorMap
-
-	actuatorMap := make(map[string]interface{})
-	for k, v := range nodeData.Actuator {
-		actuatorMap[k] = v
-	}
-	nodeDataMap["actuator"] = actuatorMap
-
-	existingData = append(existingData, nodeDataMap)
-	if err := db.Write(existingData); err != nil {
+	if err := db.Write(&db.nodes); err != nil {
 		return err
 	}
 	return nil
 }
 
-func NewClient(o *DbOptions) Db {
+func NewDbContext(o *DbOptions) DbContext {
 	db := &db{}
 	db.options = *o
+	nodes, err := (*db).ReadAll()
+	if err != nil {
+		fmt.Println("Error Retrieving nodes:", err)
+	}
+	db.nodes = nodes
 	return db
 }
