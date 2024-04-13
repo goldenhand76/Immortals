@@ -16,8 +16,10 @@ type Db interface {
 	// Commit catches the node data; It doesnt save data until the save called.
 	ReadAll() ([]map[string]interface{}, error)
 
-	Write(*models.NodeData) error
+	Write([]map[string]interface{}) error
 	// Checks if any error or duplicity exists in the data
+
+	Append(*models.NodeData) error
 }
 
 type db struct {
@@ -57,7 +59,7 @@ func (db *db) Read(nodeId string) (map[string]interface{}, error) {
 }
 
 // Commit implements Db.
-func (db *db) Write(nodeData *models.NodeData) error {
+func (db *db) Write(nodeData []map[string]interface{}) error {
 	// Marshal the JSON data
 	jsonBytes, err := json.MarshalIndent(nodeData, "", "    ")
 	if err != nil {
@@ -71,6 +73,37 @@ func (db *db) Write(nodeData *models.NodeData) error {
 	}
 
 	fmt.Printf("Node data written to %s", db.options.filePath)
+	return nil
+}
+
+// WriteMany implements Db.
+func (db *db) Append(nodeData *models.NodeData) error {
+	existingData, err := db.ReadAll()
+	if err != nil {
+		fmt.Println("Error Retrieving nodes:", err)
+		return err
+	}
+
+	// Convert the NodeData struct to a map[string]interface{} format
+	nodeDataMap := make(map[string]interface{})
+	nodeDataMap["nodeId"] = nodeData.NodeID
+
+	sensorMap := make(map[string]interface{})
+	for k, v := range nodeData.Sensor {
+		sensorMap[k] = v
+	}
+	nodeDataMap["sensor"] = sensorMap
+
+	actuatorMap := make(map[string]interface{})
+	for k, v := range nodeData.Actuator {
+		actuatorMap[k] = v
+	}
+	nodeDataMap["actuator"] = actuatorMap
+
+	existingData = append(existingData, nodeDataMap)
+	if err := db.Write(existingData); err != nil {
+		return err
+	}
 	return nil
 }
 
