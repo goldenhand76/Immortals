@@ -15,8 +15,9 @@ import (
 )
 
 var ErrNoNodeFound = errors.New("no messages found")
+var ErrNodeExists = errors.New("node already exists")
 
-func Discover(nodeID string) (*models.NodeData, error) {
+func Discover(nodeName string, nodeID string) (*models.NodeData, error) {
 	url := "http://" + nodeID + "/ip"
 	jsonStr := []byte(`{"brokerIP": "192.168.0.26"}`)
 
@@ -45,6 +46,7 @@ func Discover(nodeID string) (*models.NodeData, error) {
 		}
 		var data models.NodeData
 		data.NodeID = nodeID
+		data.NodeName = nodeName
 		if err := json.Unmarshal(body, &data); err != nil {
 			fmt.Println("Error:", err)
 			return nil, err
@@ -55,23 +57,25 @@ func Discover(nodeID string) (*models.NodeData, error) {
 	return nil, nil
 }
 
-func Add(nodeID string) (*models.NodeData, error) {
+func Add(db db.DbContext, nodeName string, nodeID string) (*models.NodeData, error) {
 	fmt.Println("Adding Node...")
-	nodeData, err := Discover(nodeID)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return nil, err
-	}
-	opts := db.NewDbOptions()
-	r := db.NewClient(opts)
+	if db.NotExists(nodeID) {
+		nodeData, err := Discover(nodeName, nodeID)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return nil, err
+		}
 
-	if err := r.Write(nodeData); err != nil {
-		return nil, err
+		if err := db.Append(nodeData); err != nil {
+			return nil, err
+		}
+		return nodeData, nil
 	}
-	return nodeData, nil
+	return nil, ErrNodeExists
 }
 
-func List() error {
-	fmt.Println("Listing containers")
-	return nil
+func List(db db.DbContext) ([]models.NodeData, error) {
+	fmt.Println("Listing nodes...")
+	nodes, err := db.ReadAll()
+	return nodes, err
 }
