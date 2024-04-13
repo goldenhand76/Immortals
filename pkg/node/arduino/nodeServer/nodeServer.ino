@@ -27,9 +27,14 @@ String topic = "";
 String message = "";
 char readChar = ' ';
 const char* error;
-JsonDocument topics;
-
+ 
 const size_t JSON_DOCUMENT_SIZE = 1024; // Adjust the size according to your JSON payload
+// Create a JsonObject
+DynamicJsonDocument topics(JSON_DOCUMENT_SIZE);
+// Create a JsonArray for "sensor" and "actuator"
+JsonArray sensorArray = topics.createNestedArray("sensor");
+JsonArray actuatorArray = topics.createNestedArray("actuator");
+
 
 struct clientData {
   DynamicJsonDocument* data;
@@ -104,13 +109,27 @@ void setup(){
   pinMode(BLUE, OUTPUT);
   pinMode(WHITE, OUTPUT);
 
-  topics["sensor"]["RED"] = prefix + "sensor/Red";
-  topics["sensor"]["GREEN"] = prefix + "sensor/Green";
-  topics["sensor"]["BLUE"] = prefix + "sensor/Blue";
-  topics["actuator"]["RED"] = prefix + "actuator/Red";
-  topics["actuator"]["GREEN"] = prefix + "actuator/Green";
-  topics["actuator"]["BLUE"] = prefix + "actuator/Blue";
-        
+  // Add sensor objects to the array
+  JsonObject sensor1 = sensorArray.createNestedObject();
+  sensor1["name"] = "Red";
+  sensor1["topic"] = "14633310/sensor/Red";
+  JsonObject sensor2 = sensorArray.createNestedObject();
+  sensor2["name"] = "Green";
+  sensor2["topic"] = "14633310/sensor/Green";
+  JsonObject sensor3 = sensorArray.createNestedObject();
+  sensor3["name"] = "Blue";
+  sensor3["topic"] = "14633310/sensor/Blue";
+
+  // Add actuator objects to the array
+  JsonObject actuator1 = actuatorArray.createNestedObject();
+  actuator1["name"] = "Red";
+  actuator1["topic"] = "14633310/actuator/Red";
+  JsonObject actuator2 = actuatorArray.createNestedObject();
+  actuator2["name"] = "Green";
+  actuator2["topic"] = "14633310/actuator/Green";
+  JsonObject actuator3 = actuatorArray.createNestedObject();
+  actuator3["name"] = "Blue";
+  actuator3["topic"] = "14633310/actuator/Blue";
 }
 
 void loop(){
@@ -127,9 +146,9 @@ void loop(){
     if (mqttClient.connect(clientID.c_str()))
     {
       Serial.println("Connected To Server");
-      mqttClient.subscribe(topics["actuator"]["RED"], 1);
-      mqttClient.subscribe(topics["actuator"]["GREEN"], 1);
-      mqttClient.subscribe(topics["actuator"]["BLUE"], 1);
+      mqttClient.subscribe(topics["actuator"][0]["topic"], 1);
+      mqttClient.subscribe(topics["actuator"][1]["topic"], 1);
+      mqttClient.subscribe(topics["actuator"][2]["topic"], 1);
     } 
     else 
     {
@@ -140,9 +159,9 @@ void loop(){
   }
   mqttClient.loop();
   Rainbow();
-  mqttClient.publish(topics["sensor"]["RED"], "This is a message from red");
-  mqttClient.publish(topics["sensor"]["GREEN"], "This is a message from green");
-  mqttClient.publish(topics["sensor"]["BLUE"], "This is a message from blue");
+  mqttClient.publish(topics["sensor"][0]["topic"], "This is a message from red");
+  mqttClient.publish(topics["sensor"][1]["topic"], "This is a message from green");
+  mqttClient.publish(topics["sensor"][2]["topic"], "This is a message from blue");
 }
   
 void HttpHandler(WiFiClient client)
@@ -183,7 +202,6 @@ void HttpHandler(WiFiClient client)
         client.println();
         serializeJsonPretty(topics, client);
         Serial.println("Sending 200");
-        
     }
   } else {
     client.print("HTTP/1.1 404 Not Found\r\n\r\n");
