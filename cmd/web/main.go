@@ -1,6 +1,7 @@
 package main
 
 import (
+	db "Immortals/internal/database"
 	"Immortals/internal/immo"
 	"Immortals/internal/kafka"
 	"Immortals/internal/mqtt"
@@ -21,7 +22,11 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(3) // Number of consumers
 
-	go immo.SetupImmo()
+	opts := db.NewDbOptions()
+	db := db.NewDbContext(opts)
+
+	// Start Immo CLI service
+	go immo.SetupImmo(db)
 	defer wg.Done()
 
 	// Start Kafka consumer
