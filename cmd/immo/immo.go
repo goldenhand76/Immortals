@@ -48,8 +48,6 @@ func main() {
 		fmt.Println("  immo discover --address <address>")
 		fmt.Println("  immo add --name <name> --address <address>")
 		fmt.Println("  immo list")
-		fmt.Println("  immo stop --name <name>")
-		fmt.Println("  immo remove --name <name>")
 		return
 	}
 
