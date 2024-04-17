@@ -11,3 +11,8 @@ go get google.golang.org/grpc
 ```bash
 protoc .\api\gRPC\immo\immo.proto --go_out=.\api\gRPC\immo --go-grpc_out=.\api\gRPC\immo
 ```
+
+## Generating gRPC C++ Files : 
+```bash
+protoc .\api\gRPC\immo\immo.proto --cpp_out=.\api\grpc\immo --cpp-grpc_out=.\api\grpc\immo
+```
