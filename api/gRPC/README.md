@@ -14,5 +14,5 @@ protoc .\api\gRPC\immo\immo.proto --go_out=.\api\gRPC\immo --go-grpc_out=.\api\g
 
 ## Generating gRPC C++ Files : 
 ```bash
-protoc .\api\gRPC\immo\immo.proto --cpp_out=.\api\grpc\immo --cpp-grpc_out=.\api\grpc\immo
+protoc .\api\gRPC\immo\immo.proto --cpp_out=.\ --grpc_out=.\ --plugin=protoc-gen-grpc="C:\msys64\mingw64\bin\grpc_cpp_plugin.exe"
 ```
