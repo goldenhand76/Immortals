@@ -21,14 +21,16 @@ type server struct {
 func (s *server) DiscoverNode(ctx context.Context, req *pb.NodeRequest) (*pb.NodeResponse, error) {
 	log.Printf("Discovering node with address %s\n", req.Address)
 	nodeData, err := node.Discover(req.Name, req.Address)
+	if err != nil {
+		log.Printf("Error Discovering node with address %s\n : %s", req.Address, err)
+		return nil, err
+	}
 	nodeResponse := &pb.NodeResponse{}
 	nodeResponse.Id = nodeData.NodeID
 	nodeResponse.Sensor = DiscoverSensor(nodeData.Sensor)
 	nodeResponse.Actuator = DiscoverActuator(nodeData.Actuator)
 	fmt.Println("node Data:", nodeData)
-	if err != nil {
-		return nil, err
-	}
+
 	return nodeResponse, nil
 }
 
@@ -95,7 +97,7 @@ func SetupImmo(dbContext db.DbContext) {
 	s := grpc.NewServer()
 	pb.RegisterImmoServiceServer(s, &server{DbContext: dbContext})
 
-	log.Println("Immo server started")
+	log.Println("Immo server started: localhost:50051")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve %v", err)
 	}
