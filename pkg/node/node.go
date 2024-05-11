@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -58,7 +59,7 @@ func Discover(nodeName string, nodeID string) (*models.NodeData, error) {
 }
 
 func Add(db db.DbContext, nodeName string, nodeID string) (*models.NodeData, error) {
-	fmt.Println("Adding Node...")
+	log.Printf("Adding Node...")
 	if db.NotExists(nodeID) {
 		nodeData, err := Discover(nodeName, nodeID)
 		if err != nil {
@@ -71,6 +72,7 @@ func Add(db db.DbContext, nodeName string, nodeID string) (*models.NodeData, err
 		}
 		return nodeData, nil
 	}
+	log.Printf("Node already exists\n")
 	return nil, ErrNodeExists
 }
 
