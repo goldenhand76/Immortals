@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"Immortals/pkg/models"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var ErrNoNodeFound = errors.New("no messages found")

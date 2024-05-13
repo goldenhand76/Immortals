@@ -1,0 +1,34 @@
+[
+    {
+        "nodeName": "table",
+        "nodeId": "14633310",
+        "sensor": [
+            {
+                "Name": "Red",
+                "Topic": "14633310/sensor/Red"
+            },
+            {
+                "Name": "Green",
+                "Topic": "14633310/sensor/Green"
+            },
+            {
+                "Name": "Blue",
+                "Topic": "14633310/sensor/Blue"
+            }
+        ],
+        "actuator": [
+            {
+                "Name": "Red",
+                "Topic": "14633310/actuator/Red"
+            },
+            {
+                "Name": "Green",
+                "Topic": "14633310/actuator/Green"
+            },
+            {
+                "Name": "Blue",
+                "Topic": "14633310/actuator/Blue"
+            }
+        ]
+    }
+]
