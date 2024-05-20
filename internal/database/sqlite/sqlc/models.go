@@ -18,11 +18,12 @@ type Actuators struct {
 }
 
 type Nodes struct {
-	ID       int64          `json:"id"`
-	Name     sql.NullString `json:"name"`
-	AgentID  sql.NullInt32  `json:"agent_id"`
-	ClientID sql.NullString `json:"client_id"`
-	IsOnline sql.NullInt32  `json:"is_online"`
+	ID        int64          `json:"id"`
+	Name      sql.NullString `json:"name"`
+	AgentID   sql.NullInt32  `json:"agent_id"`
+	ClientID  sql.NullString `json:"client_id"`
+	IsOnline  sql.NullBool   `json:"is_online"`
+	CreatedAt time.Time      `json:"created_at"`
 }
 
 type Sensors struct {

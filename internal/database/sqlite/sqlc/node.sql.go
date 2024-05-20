@@ -15,14 +15,14 @@ INSERT INTO nodes (
     name, agent_id, client_id, is_online)
     VALUES (
     $1, $2, $3, $4
-) RETURNING id, name, agent_id, client_id, is_online
+) RETURNING id, name, agent_id, client_id, is_online, created_at
 `
 
 type CreateNodeParams struct {
 	Name     sql.NullString `json:"name"`
 	AgentID  sql.NullInt32  `json:"agent_id"`
 	ClientID sql.NullString `json:"client_id"`
-	IsOnline sql.NullInt32  `json:"is_online"`
+	IsOnline sql.NullBool   `json:"is_online"`
 }
 
 func (q *Queries) CreateNode(ctx context.Context, arg CreateNodeParams) (Nodes, error) {
@@ -39,6 +39,7 @@ func (q *Queries) CreateNode(ctx context.Context, arg CreateNodeParams) (Nodes, 
 		&i.AgentID,
 		&i.ClientID,
 		&i.IsOnline,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -52,8 +53,17 @@ func (q *Queries) DeleteNode(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteNodeByClientID = `-- name: DeleteNodeByClientID :exec
+DELETE FROM nodes WHERE client_id = $1
+`
+
+func (q *Queries) DeleteNodeByClientID(ctx context.Context, clientID sql.NullString) error {
+	_, err := q.db.ExecContext(ctx, deleteNodeByClientID, clientID)
+	return err
+}
+
 const getNode = `-- name: GetNode :one
-SELECT id, name, agent_id, client_id, is_online FROM nodes
+SELECT id, name, agent_id, client_id, is_online, created_at FROM nodes
 WHERE id = $1 LIMIT 1
 `
 
@@ -66,12 +76,52 @@ func (q *Queries) GetNode(ctx context.Context, id int64) (Nodes, error) {
 		&i.AgentID,
 		&i.ClientID,
 		&i.IsOnline,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getNodeByClientID = `-- name: GetNodeByClientID :one
+SELECT id, name, agent_id, client_id, is_online, created_at FROM nodes
+WHERE client_id = $1 LIMIT 1
+`
+
+func (q *Queries) GetNodeByClientID(ctx context.Context, clientID sql.NullString) (Nodes, error) {
+	row := q.db.QueryRowContext(ctx, getNodeByClientID, clientID)
+	var i Nodes
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.AgentID,
+		&i.ClientID,
+		&i.IsOnline,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getNodeForUpdate = `-- name: GetNodeForUpdate :one
+SELECT id, name, agent_id, client_id, is_online, created_at FROM nodes
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE
+`
+
+func (q *Queries) GetNodeForUpdate(ctx context.Context, id int64) (Nodes, error) {
+	row := q.db.QueryRowContext(ctx, getNodeForUpdate, id)
+	var i Nodes
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.AgentID,
+		&i.ClientID,
+		&i.IsOnline,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listNodes = `-- name: ListNodes :many
-SELECT id, name, agent_id, client_id, is_online FROM nodes
+SELECT id, name, agent_id, client_id, is_online, created_at FROM nodes
 ORDER BY name
 `
 
@@ -90,6 +140,7 @@ func (q *Queries) ListNodes(ctx context.Context) ([]Nodes, error) {
 			&i.AgentID,
 			&i.ClientID,
 			&i.IsOnline,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -107,7 +158,7 @@ func (q *Queries) ListNodes(ctx context.Context) ([]Nodes, error) {
 const updateNode = `-- name: UpdateNode :one
 UPDATE nodes SET name = $2
 WHERE id = $1
-RETURNING id, name, agent_id, client_id, is_online
+RETURNING id, name, agent_id, client_id, is_online, created_at
 `
 
 type UpdateNodeParams struct {
@@ -124,6 +175,7 @@ func (q *Queries) UpdateNode(ctx context.Context, arg UpdateNodeParams) (Nodes, 
 		&i.AgentID,
 		&i.ClientID,
 		&i.IsOnline,
+		&i.CreatedAt,
 	)
 	return i, err
 }
