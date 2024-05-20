@@ -8,6 +8,7 @@ service ImmoService {
   rpc DiscoverNode(NodeRequest) returns (NodeResponse);
   rpc AddNode(NodeRequest) returns (NodeResponse);
   rpc ListNodes(ListRequest) returns (ListResponse);
+  rpc RemoveNode(NodeRequest) returns (RemoveResponse);
 }
 
 message NodeRequest {
@@ -16,21 +17,28 @@ message NodeRequest {
 }
 
 message SensorResponse {
-  string name = 1;
-  string topic = 2;
+  int64 id = 1;
+  string name = 2;
+  string topic = 3;
 }
 
 message ActuatorResponse {
-  string name = 1;
-  string topic = 2;
+  int64 id = 1;
+  string name = 2;
+  string topic = 3;
 }
 
 message NodeResponse {
-  string name = 1;
-  string id = 2;
+  int64 id = 1;
+  string name = 2;
   repeated SensorResponse sensor = 3;
   repeated ActuatorResponse actuator = 4;
   string error = 5;
+}
+
+message RemoveResponse {
+  bool status = 1;
+  string error = 2;
 }
 
 message ListResponse {

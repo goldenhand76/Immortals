@@ -43,10 +43,15 @@ func main() {
 	// Parse command-line flags
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 
+	// Parse Remove command flags
+	removeCmd := flag.NewFlagSet("remove", flag.ExitOnError)
+	rAddressFlag := removeCmd.String("address", "", "Node Address")
+
 	if len(os.Args) < 2 {
 		fmt.Println("Usage:")
 		fmt.Println("  immo discover --address <address>")
 		fmt.Println("  immo add --name <name> --address <address>")
+		fmt.Println("  immo remove --address <address>")
 		fmt.Println("  immo list")
 		return
 	}
@@ -83,6 +88,21 @@ func main() {
 			return
 		}
 		fmt.Printf("Node Successfully Added: %s\n", resp)
+
+	case "remove":
+		removeCmd.Parse(os.Args[2:])
+		if *rAddressFlag == "" {
+			removeCmd.PrintDefaults()
+			return
+		}
+		resp, err := client.RemoveNode(context.Background(), &pb.NodeRequest{
+			Address: *aAddressFlag,
+		})
+		if err != nil {
+			fmt.Println("Error deleting node:", err)
+			return
+		}
+		fmt.Printf("Node Successfully Removed: %s\n", resp)
 
 	case "list":
 		listCmd.Parse(os.Args[2:])
