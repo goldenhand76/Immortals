@@ -8,12 +8,15 @@ dropdb:
 	docker exec -it postgres dropdb immo
 
 migrateup:
-	migrate -path ./internal/database/sqlite/migrations -database "postgresql://leo:Goldenhand76@localhost:5432/immo?sslmode=disable" -verbose up
+	migrate -path ./migrations -database "postgresql://leo:Goldenhand76@localhost:5432/immo?sslmode=disable" -verbose up
 
 migratedown:
-	migrate -path ./internal/database/sqlite/migrations -database "postgresql://leo:Goldenhand76@localhost:5432/immo?sslmode=disable" -verbose down
+	migrate -path ./migrations -database "postgresql://leo:Goldenhand76@localhost:5432/immo?sslmode=disable" -verbose down
 
-sqlc:
+generate:
 	sqlc generate
 
+test: 
+	go test -v -cover ./...
+	
 .PHONEY: postgres createdb dropdb migrateup migratedown sqlc

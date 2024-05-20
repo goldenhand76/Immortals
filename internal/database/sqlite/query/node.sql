@@ -9,6 +9,15 @@ INSERT INTO nodes (
 SELECT * FROM nodes
 WHERE id = $1 LIMIT 1;
 
+-- name: GetNodeByClientID :one
+SELECT * FROM nodes
+WHERE client_id = $1 LIMIT 1;
+
+-- name: GetNodeForUpdate :one
+SELECT * FROM nodes
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE; 
+
 -- name: ListNodes :many
 SELECT * FROM nodes
 ORDER BY name;
@@ -20,3 +29,6 @@ RETURNING *;
 
 -- name: DeleteNode :exec
 DELETE FROM nodes WHERE id = $1;
+
+-- name: DeleteNodeByClientID :exec
+DELETE FROM nodes WHERE client_id = $1;

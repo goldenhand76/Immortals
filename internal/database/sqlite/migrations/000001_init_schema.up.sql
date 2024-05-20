@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS nodes (
 	name VARCHAR, 
 	agent_id INTEGER, 
 	client_id VARCHAR UNIQUE, 
-	is_online INTEGER
+	is_online BOOLEAN,
+    created_at timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE IF NOT EXISTS sensors (
