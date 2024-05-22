@@ -1,13 +1,21 @@
 package main
 
 import (
-	db "Immortals/internal/database"
+	db "Immortals/internal/database/sqlite/sqlc"
 	"Immortals/internal/immo"
 	"Immortals/internal/kafka"
 	"Immortals/internal/mqtt"
-	_ "Immortals/pkg/node"
 	"context"
+	"database/sql"
+	"log"
 	"sync"
+
+	_ "github.com/lib/pq"
+)
+
+const (
+	dbDriver = "postgres"
+	dbSource = "postgresql://leo:Goldenhand76@localhost:5432/immo?sslmode=disable"
 )
 
 func main() {
@@ -18,15 +26,19 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	conn, err := sql.Open(dbDriver, dbSource)
+	if err != nil {
+		log.Printf("cannot Connect to database: %s", err)
+	}
+
+	dbStore := db.NewStore(conn)
+
 	// Create a wait group to wait for all consumers to finish
 	var wg sync.WaitGroup
 	wg.Add(3) // Number of consumers
 
-	opts := db.NewDbOptions()
-	db := db.NewDbContext(opts)
-
 	// Start Immo CLI service
-	go immo.SetupImmo(db)
+	go immo.SetupImmo(dbStore)
 	defer wg.Done()
 
 	// Start Kafka consumer
