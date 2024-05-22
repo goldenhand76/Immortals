@@ -2,7 +2,7 @@ name: ci-test
 
 on:
   push:
-    branches: [ master ]
+    branches: [ "main" ]
 
 jobs:
 
@@ -16,8 +16,8 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
-          POSTGRES_USER: root
-          POSTGRES_PASSWORD: secret
+          POSTGRES_USER: leo
+          POSTGRES_PASSWORD: Goldenhand76
           POSTGRES_DB: immo
         # Set health checks to wait until postgres has started
         options: >-
@@ -30,14 +30,14 @@ jobs:
           - 5432:5432
 
     steps:
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+      - name: Set up Go 1.22
+        uses: actions/setup-go@v4
         with:
-          go-version: ^1.22
+          go-version: '1.22'
         id: go 
       
       - name: Check out code into the Go Module directory 
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Golang-migrate
         run: |
