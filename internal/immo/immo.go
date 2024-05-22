@@ -3,7 +3,6 @@ package immo
 import (
 	pb "Immortals/api/gRPC/immo/immo"
 	db "Immortals/internal/database/sqlite/sqlc"
-	"Immortals/pkg/models"
 	"context"
 	"database/sql"
 	"errors"
@@ -99,28 +98,6 @@ func (s *Server) RemoveNode(ctx context.Context, req *pb.NodeRequest) (*pb.Remov
 	fmt.Printf("Node Removed %s\n", req.Address)
 	removeResponse.Status = true
 	return removeResponse, nil
-}
-
-func DiscoverSensor(sensors []models.Sensor) []*pb.SensorResponse {
-	var sensorList []*pb.SensorResponse
-	for _, sensor := range sensors {
-		sensorResponse := &pb.SensorResponse{}
-		sensorResponse.Name = sensor.Name
-		sensorResponse.Topic = sensor.Topic
-		sensorList = append(sensorList, sensorResponse)
-	}
-	return sensorList
-}
-
-func DiscoverActuator(actuators []models.Actuator) []*pb.ActuatorResponse {
-	var actuatorList []*pb.ActuatorResponse
-	for _, sensor := range actuators {
-		actuatorResponse := &pb.ActuatorResponse{}
-		actuatorResponse.Name = sensor.Name
-		actuatorResponse.Topic = sensor.Topic
-		actuatorList = append(actuatorList, actuatorResponse)
-	}
-	return actuatorList
 }
 
 func SetupImmo(store *db.Store) {
