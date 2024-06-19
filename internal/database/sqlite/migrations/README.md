@@ -3,7 +3,7 @@ https://github.com/golang-migrate/migrate
 
 ## Create init_schema: 
 ```bash
-migrate create -exc sql -dir .\internal\database\sqlite\migrations\ -seq init_schema 
+migrate create -ext sql -dir .\internal\database\sqlite\migrations\ -seq init_schema 
 ```
 
 ## Migrate init_schema: 
